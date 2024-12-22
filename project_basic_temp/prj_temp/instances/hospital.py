@@ -82,19 +82,9 @@ class Hospital():
         self.weights=weights
 
 
-'''
-    def add_patient(self, idx_room):
-        self.occupation[idx_room] += 1
 
-    def remove_patient(self, idx_room):
-        self.occupation[idx_room] -= 1
-
-    def fitness(self):
-        return math.abs(sum(self.occupation) - 2 * self.n_rooms) 
-'''
-
-class Scheduling():
-    h=Hospital()
+class decisional_variables():
+    h = Hospital()
 
     #decision variables
     pr=[0]*h.n_patients #pos=id patient, el: room
@@ -102,6 +92,18 @@ class Scheduling():
     op=[0]*h.n_patients #pos=id_patient , el: op_theater
     CN=np.array([[0]*h.n_rooms]*(h.n_shifts*h.n_days)) #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
 
+    def __init__(self,h,pr,ad,op,CN):
+        self.h=h
+        self.pr = pr
+        self.ad = ad
+        self.op = op
+        self.CN =CN
+
+
+
+class Scheduling():
+    h=Hospital()
+    dv=decisional_variables()
 
     new_patients =[set()]*(h.n_days) # id= day, element: set of incoming patients
     exit_patients=[set()]*(h.n_days) #id=day, el: set of exiting patients
@@ -141,40 +143,11 @@ class Scheduling():
     tot_eccessive_work=0 #S4
     tot_continuity_of_care=0 #S3
 
-
-
-
-
-    def __init__(self, hospital,pr,ad,op,CN):
-        '''
-        new_patients, exit_patients, room_to_patient, room_gender, room_age, room_age_counter, room_skill_level,
-        room_workload, nurse_to_patient, nurse_to_occupant, surgeon_daily_work, op_theater_daily_occupancy, room_to_surgeon, delays, unscheduled_patients
-        '''
+    def __init__(self, hospital, dv):
         self.h =hospital
-        self.pr = pr
-        self.ad = ad
-        self.op = op
-        self.CN =CN
-        '''
-        self.new_patients =new_patients
-        self.exit_patients = exit_patients
-        self.room_to_patient = room_to_patient
-        self.room_gender = room_gender
-        self.room_age = room_age
-        self.room_age_counter = room_age_counter
-        self.room_skill_level = room_skill_level
-        self.room_workload = room_workload
-        self.nurse_to_patient = nurse_to_patient
-        self.nurse_to_occupant =nurse_to_occupant
-        self.surgeon_daily_work = surgeon_daily_work
-        self.op_theater_daily_occupancy = op_theater_daily_occupancy
-        self.room_to_surgeon = room_to_surgeon
-        self.delays = delays
-        self.unscheduled_patients = unscheduled_patients
-        '''
+        self.dv=dv
 
-        #funzione condizione iniziale
-
+    # funzione condizione iniziale
     def initial_condition(self):
         for id_occ in range(0,self.h.n_occupants): #set initial conditions with occupants' infos
             r_id= self.h.occupants[id_occ]["room_id"] #room id of occupant i es: "r00"
@@ -198,7 +171,7 @@ class Scheduling():
         #S8 calculating postponed patients
         p=0
         while self.feasible and p<self.h.n_patients:
-            ad_date = self.ad[p]  # admission date
+            ad_date = self.dv.ad[p]  # admission date
             if self.h.patients[p]["mandatory"]: #mandatory patient
                 if ad_date < self.h.patients[p]["surgery_release_day"] or ad_date > self.h.patients[p]["surgery_due_day"]:
                     self.feasible=False #admission date out of range
@@ -216,7 +189,7 @@ class Scheduling():
 
     def insert_new_exit(self): #inserting values in new patients and exit patients
         for p in range(0, self.h.n_patients):
-            ad_date = self.ad[p]
+            ad_date = self.dv.ad[p]
             ex_date= ad_date+ self.h.patients[p]["length_of_stay"]
             self.new_patients[ad_date].add(p)
             self.exit_patients[ex_date].add(p)
@@ -233,7 +206,7 @@ class Scheduling():
                 surg_duration=self.h.patients[p]["surgery_duration"]
                 doc=self.h.patients[p]["surgeon_id"]
                 doc_id=int(doc[1:])
-                op_ass=self.op[p]
+                op_ass=self.dv.op[p]
                 self.surgeon_daily_work[doc_id] += surg_duration #adding surgery duration to total working hours of doc
                 self.op_theater_daily_occupancy[op_ass] +=surg_duration #adding surgery duration to total working hours of op_theater
                 self.op_to_surgeon[doc_id].add(op_ass) #add op_the to set of op_the used by the surgeon in the day
@@ -262,7 +235,7 @@ class Scheduling():
         #H2 compatible rooms
         p=0
         while self.feasible and p<self.h.n_patients:
-            room=self.pr[p]
+            room=self.dv.pr[p]
             #dati caricati già come id stanze senza lettere
             if room in self.h.patients[p]["incompatible_room_ids"]:
                 self.feasible=False
@@ -280,7 +253,7 @@ class Scheduling():
 
             #PEOPLE ENTERING
             for np in self.new_patients[d]:
-                room=self.pr[np]
+                room=self.dv.pr[np]
 
                 if self.room_gender[room] is not None and self.room_gender[room] != self.h.patients[np]["gender"]:
                     self.feasible=False #H1
@@ -315,7 +288,7 @@ class Scheduling():
 
                 for shi in range(0, self.h.n_shifts):
                     s=(self.h.n_shifts * d) + shi
-                    id_nurse=self.CN[r, s]
+                    id_nurse=self.dv.CN[r, s]
                     if self.h.working_shifts(s).get(id_nurse) is None:    #check if the nurse is working in the shift
                         self.feasible=False
 
@@ -326,7 +299,7 @@ class Scheduling():
                     break
 
                 for pa in self.room_to_patient[r][0]: #patients in the room
-                    first_index=self.h.n_shifts*(d-self.ad[pa])
+                    first_index=self.h.n_shifts*(d-self.dv.ad[pa])
                     for sh in range(0, self.h.n_shifts):
                         tot_work_room[sh] += self.h.patients[pa]["workload_produced"][first_index+sh] # adding workload requested in the shift
                         max_skill_room[sh] =max(max_skill_room[sh], self.h.patients[pa]["skill_level_required"][first_index+sh]) #updating skill level requested in the shift
@@ -353,7 +326,7 @@ class Scheduling():
 
             #PEOPLE EXITING
             for ep in self.exit_patients[d]:
-                room=self.pr[ep]
+                room=self.dv.pr[ep]
                 self.room_to_patient[room][0].remove(ep)  # removing patients
                 if len(self.room_to_patient[room][0])+len(self.room_to_patient[room][1]) ==0:
                     self.room_gender[room] = None

@@ -20,3 +20,7 @@ with open("./settings/solver_setting.json") as f:
     )
 ga = Ga_Solver(solver_setting)
 ga.solve()
+
+
+
+#salvare il più buono
