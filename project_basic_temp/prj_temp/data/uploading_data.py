@@ -16,12 +16,14 @@ age_groups=data["age_groups"]
 
 n_nurses=len(data["nurses"])
 nurses_skill_levels=[0]*n_nurses
-for nurse in data["nurses"]:
+for nurse in range(0,n_nurses):
     id_nurse=data["nurses"][nurse]["id"]
     pos=int(id_nurse[1:])
     nurses_skill_levels[pos]=data["nurses"][nurse]["skill_level"]
 
+print(nurses_skill_levels )
 
+'''
 working_shifts=data["working_shifts"]
 n_surgeons=len(data["surgeons"])
 #surgeons_availability=data["surgeons_availability"]
@@ -34,3 +36,4 @@ occupants=data["occupants"]
 n_patients=len(data["patients"])
 patients=data["patients"]
 weights=data["weights"]
+'''
