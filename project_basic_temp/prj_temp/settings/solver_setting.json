@@ -1,6 +1,14 @@
 {
-    "n_individual": 10,
+    "n_individual": 20,
+    "initial_feasible_percentage": 0.7,
+    "initial_best_percentage": 0.25,
+    "n_different_CN": 3,
+    "multinomial_selection_percentage": 0.8,
+    "crossover_point_percentage": 0.5 ,
     "mutation_prob": 0.01,
-    "n_generation": 20,
-    "time_limit": 300
+    "feasible_percentage": 0.5,
+    "good_function_fitness_percentage": 1.1 ,
+    "max_generation": 20,
+    "max_time": 3600,
+    "fraction_generation_no_improv": 0.2
 }

@@ -173,12 +173,12 @@ class Scheduling():
         while self.feasible and p<self.h.n_patients:
             ad_date = self.dv.ad[p]  # admission date
             if self.h.patients[p]["mandatory"]: #mandatory patient
-                if ad_date < self.h.patients[p]["surgery_release_day"] or ad_date > self.h.patients[p]["surgery_due_day"]:
+                if ad_date < self.h.patients[p]["surgery_release_day"] or ad_date > self.h.patients[p]["surgery_due_day"]: ######################## ALREADY CHECKED ########
                     self.feasible=False #admission date out of range
                 else:
                     self.delays[p]=ad_date - self.h.patients[p]["surgery_release_day"] # delay
             else: #optional patient
-                if ad_date < self.h.patients[p]["surgery_release_day"]: #for optional patient no due date
+                if ad_date < self.h.patients[p]["surgery_release_day"]: #for optional patient no due date ######################## ALREADY CHECKED ########
                     self.feasible=False
                 else:
                     if ad_date == self.h.n_days: #postponed
@@ -227,12 +227,12 @@ class Scheduling():
                     self.tot_tranfer += len(self.op_to_surgeon[s])-1 #S6
                 s+=1
 
-
             d+=1
 
 
     def PSA_NRA_constr_check(self):
         #H2 compatible rooms
+        ################################ already checked #############################
         p=0
         while self.feasible and p<self.h.n_patients:
             room=self.dv.pr[p]
@@ -240,6 +240,7 @@ class Scheduling():
             if room in self.h.patients[p]["incompatible_room_ids"]:
                 self.feasible=False
             p+=1
+        ##############################################################################
 
         #H1 homogeneus gender for room
         #H7 room capacity
@@ -289,9 +290,8 @@ class Scheduling():
                 for shi in range(0, self.h.n_shifts):
                     s=(self.h.n_shifts * d) + shi
                     id_nurse=self.dv.CN[r, s]
-                    if self.h.working_shifts(s).get(id_nurse) is None:    #check if the nurse is working in the shift
+                    if self.h.working_shifts[s].get(id_nurse) is None:   ######################à ALREADY CHECKED############### #check if the nurse is working in the shift
                         self.feasible=False
-
                     else:
                         nurse_seen_day[shi]=id_nurse
 
