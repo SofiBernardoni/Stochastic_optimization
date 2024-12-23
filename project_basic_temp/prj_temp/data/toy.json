@@ -326,6 +326,17 @@
         0,
         0
       ]
+    }, {
+      "id": "s1",
+      "max_surgery_time": [
+        0,
+        481,
+        481,
+        481,
+        481,
+        0,
+        0
+      ]
     }
   ],
   "operating_theaters": [

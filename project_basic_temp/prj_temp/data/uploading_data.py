@@ -9,12 +9,29 @@ import json
 with open('toy.json', 'r') as file:
     data = json.load(file)
 
+#general infos
 n_days=data["days"]
 skill_levels=data["skill_levels"]
-### da modificare un attimo
-shift_types=data["shift_types"]
-age_groups=data["age_groups"]
 
+# dictionary of age groups and shifts
+shift=data["shift_types"]
+n_shifts=len(shift)
+shift_types={}
+i=0
+for k in shift:
+    shift_types[k]=i
+    i+=1
+
+
+age=data["age_groups"]
+n_age=len(age)
+age_groups={}
+j=0
+for k in age:
+    age_groups[k]=j
+    j+=1
+
+#nurses' info
 n_nurses=len(data["nurses"])
 nurses_skill_levels=[0]*n_nurses
 for nurse in range(0,n_nurses):
@@ -22,21 +39,62 @@ for nurse in range(0,n_nurses):
     pos=int(id_nurse[1:])
     nurses_skill_levels[pos]=data["nurses"][nurse]["skill_level"]
 
-print(nurses_skill_levels )
 
-'''
-working_shifts=data["working_shifts"]
+
+working_shifts=[{}]*(n_days*n_shifts)
+
+for t in data["nurses"]: #t è un dizionario, data["nurse"] è una lista di dizionari
+    id_nurse=int(t["id"][1:])
+    for p in t["working_shifts"]: #t["working_shifts"]:lista di dizionari
+        day=p["day"]
+        shift=p["shift"]
+        m=shift_types[shift]
+        max_load=p["max_load"]
+        working_shifts[(n_shifts*day)+m][id_nurse]=max_load
+
+print(working_shifts)
+
+
+#chiedere a gaiaaaa: vedere se va bene
 n_surgeons=len(data["surgeons"])
-#surgeons_availability=data["surgeons_availability"]
+surgeons_availability=np.zeros((n_days, n_surgeons), dtype=int)
+#surgeons_availability=np.array([[[0]*n_surgeons]*n_days])
+for su in data["surgeons"]:
+    id_surgeon=int(su["id"][1:])
+    surgeons_availability[:, id_surgeon]=su["max_surgery_time"]
+print(surgeons_availability)
+
+
+#operating theater
 n_op_theaters=len(data["operating_theaters"])
-#op_theaters_availability=data["op_theaters_availability"]
+op_theaters_availability=np.zeros((n_days, n_op_theaters), dtype=int)
+for op in data["operating_theaters"]:
+    id_op=int(op["id"][1:])
+    op_theaters_availability[:, id_op]=op["availability"]
+print(op_theaters_availability)
+
+#room
 n_rooms=len(data["rooms"])
-#rooms_capacity=data["rooms_capacity"]
+rooms_capacity=[0]*n_rooms
+for r in data["rooms"]:
+    id=int(r["id"][1:])
+    rooms_capacity[id]=data["rooms"][id]["capacity"]
+
+#occupants
 n_occupants=len(data["occupants"])
 occupants=data["occupants"]
+for i in range(0, n_occupants):
+    del occupants[i]["id"]
+    occupants[i]["room_id"] = int(occupants[i]["room_id"][1:])
+#patients
 n_patients=len(data["patients"])
 patients=data["patients"]
-weights=data["weights"]
-'''
+for i in range(0, n_patients):
+    del patients[i]["id"]
+    patients[i]["surgeon_id"] = int(patients[i]["surgeon_id"][1:])
+    for l in range(0, len(patients[i]["incompatible_room_ids"])):
+        patients[i]["incompatible_room_ids"][l]=int(patients[i]["incompatible_room_ids"][l][1:])
 
-#prova 2
+#weights
+weights=data["weights"]
+
