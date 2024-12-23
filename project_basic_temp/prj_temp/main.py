@@ -24,3 +24,4 @@ ga.solve()
 
 
 #salvare il più buono
+# Ciaoooooooooooooooooooooooooooo
