@@ -84,20 +84,23 @@ class Hospital():
 
 
 class decisional_variables():
-    h = Hospital()
+    #h = Hospital()
 
     #decision variables
-    pr=[0]*h.n_patients #pos=id patient, el: room
-    ad=[0]*h.n_patients #pos=id_patient, el: admission date= 0...D, ad=D if postponed
-    op=[0]*h.n_patients #pos=id_patient , el: op_theater
-    CN=np.array([[0]*h.n_rooms]*(h.n_shifts*h.n_days)) #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
+    #pr=[0]*h.n_patients #pos=id patient, el: room
+    #ad=[0]*h.n_patients #pos=id_patient, el: admission date= 0...D, ad=D if postponed
+    #op=[0]*h.n_patients #pos=id_patient , el: op_theater
+    #CN=np.array([[0]*h.n_rooms]*(h.n_shifts*h.n_days)) #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
 
-    def __init__(self,h,pr,ad,op,CN):
-        self.h=h
-        self.pr = pr
-        self.ad = ad
-        self.op = op
-        self.CN =CN
+    def __init__(self,pr,ad,op,CN):
+        #self.h=h
+        self.pr = pr #pos=id patient, el: room
+        self.ad = ad #pos=id_patient, el: admission date= 0...D, ad=D if postponed
+        self.op = op #pos=id_patient , el: op_theater
+        self.CN =CN #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
+        n_pat=len(pr)
+        if len(self.ad)!= n_pat or len(self.op)!= n_pat:
+            print("ERROR: pr,ad and op need to have the same length")
 
 
 
@@ -146,6 +149,13 @@ class Scheduling():
     def __init__(self, hospital, dv):
         self.h =hospital
         self.dv=dv
+        if len(self.dv.pr) != self.h.n_patients:
+            print("ERROR: decision variables' size not compatible with the number of patients in the hospital list")
+        (nrow,ncol)=self.dv.CN.shape
+        if nrow!= self.h.n_days*self.h.n_shifts:
+            print("ERROR: CN's size not compatible with the number of scheduling days and hospital shifts")
+        if ncol!= self.h.n_rooms:
+            print("ERROR: CN's size not compatible with the number of hospital rooms")
 
     # funzione condizione iniziale
     def initial_condition(self):
@@ -213,7 +223,7 @@ class Scheduling():
 
             o=0
             while self.feasible and o <self.h.n_op_theaters:
-                if self.op_theater_daily_occupancy[o] > self.h.op_theaters_availability[d,o]: #H4
+                if self.op_theater_daily_occupancy[o] > self.h.op_theaters_availability[d,o]: #H4 ######################## ALREADY CHECKED ########
                     self.feasible=False
                 elif self.op_theater_daily_occupancy[o] !=0: #S5
                     self.tot_op_theater_opened +=1
@@ -221,7 +231,7 @@ class Scheduling():
 
             s=0
             while self.feasible  and s < self.h.n_surgeons:
-                if self.surgeon_daily_work[s] > self.h.surgeons_availability[d,s]: #H3
+                if self.surgeon_daily_work[s] > self.h.surgeons_availability[d,s]: #H3 ######################## ALREADY CHECKED ########
                     self.feasible = False
                 else:
                     self.tot_tranfer += len(self.op_to_surgeon[s])-1 #S6

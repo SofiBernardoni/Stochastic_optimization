@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from instances import * # aggiustare NON LO VEDE #
 
 
 class Ga_Solver():
@@ -21,10 +22,12 @@ class Ga_Solver():
 
     # INITIALIZATION FUNCTION: to generate the initial population
     def initialization(self):
+        self.population=[0]*self.n_individual #population=list of decisional_variables()
         n=0 #counter of solutions in the initial population
+        not_feasible_individuals=0 # counter of not feasible solutions in the initial population
         room_set=set(range(0,self.h.n_rooms)) #set containing all room numbers
-
         while n<self.n_individual:
+            ##################### SOLUTION GENERATION ######################
             # pr generation (rooms for patients)
             pr=[0]*self.h.n_patients #pos=id patient, el: room assigned
             for p in range(0,self.h.n_patients):
@@ -76,9 +79,26 @@ class Ga_Solver():
                 op=[random.choice(op_theaters_list) for p in range(0,self.h.n_patients)] #pos=id patient, el: room assigned
                 # Checking if op is compatible with H4: op_theaters availability constraint.
                 feasible=True
-                #################################### INSERT H4 checking ###################################
+                d=0
+                while feasible and d<self.h.n_days:
+                    new_patients={p for p in range(0, self.h.n_patients) if ad[p]==d} #set of incoming patients of day d
+                    op_theater_daily_occupancy=[0]*self.h.n_op_theaters #position=id_op_th, el: total_occupancy in day d
+                    for p in new_patients:
+                        op_ass=op[p]
+                        op_theater_daily_occupancy[op_ass] +=self.h.patients[p]["surgery_duration"] #adding surgery duration to total working hours of op_theater
+                    o=0
+                    while feasible and o <self.h.n_op_theaters:
+                        if op_theater_daily_occupancy[o] > self.h.op_theaters_availability[d,o]: #### H4 ####
+                            feasible=False
+                        o+=1
+                    d+=1
                 if feasible: #we can stop generating op because this choice is a valid one
                         op_generated=True
+
+            dv= decisional_variables(pr,ad,op,CN) #proposed solution ############## per ora non lo vede: da aggiustare!!!
+
+            ########## FITNESS EVALUATION OF SOLUTION #############
+            # Note that the proposed solution could still be NOT feasible due to H1 or H7 (we admit init_feasible_perc of the initial population not feasible )
 
 
 
