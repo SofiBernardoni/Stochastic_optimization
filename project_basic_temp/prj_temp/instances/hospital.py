@@ -1,3 +1,5 @@
+######################### remove already checked hard constraints #####################################
+
 import math
 import numpy as np
 
@@ -156,6 +158,7 @@ class Scheduling():
             print("ERROR: CN's size not compatible with the number of scheduling days and hospital shifts")
         if ncol!= self.h.n_rooms:
             print("ERROR: CN's size not compatible with the number of hospital rooms")
+        self.feasible=True
 
     # funzione condizione iniziale
     def initial_condition(self):
@@ -172,7 +175,6 @@ class Scheduling():
             day_ex=self.h.occupants[id_occ]["length_of_stay"] #vedi se convertire int
             self.exit_occupants[day_ex].add(id_occ) #exit days of occupants
 
-    feasible=True
 
     def global_constr_check(self):
         #H5: check mandatory patients are admitted, H6: check admission date feasibility
@@ -332,8 +334,6 @@ class Scheduling():
                     self.tot_eccessive_work += max(0, work_nurses[n]-self.h.working_shifts[total_shift][n]) #S4
 
 
-
-
             #PEOPLE EXITING
             for ep in self.exit_patients[d]:
                 room=self.dv.pr[ep]
@@ -356,7 +356,6 @@ class Scheduling():
                 self.room_age_counter[room][age] -= 1
                 if self.room_age_counter[room][age] == 0:
                     self.room_age[room].remove(age)
-
 
             d+=1
         for pp in range(0, self.h.n_patients):
