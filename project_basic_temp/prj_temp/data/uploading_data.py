@@ -6,7 +6,7 @@ import numpy as np
 import json
 
 # Leggere il file JSON
-with open('test10.json', 'r') as file:
+with open('test05.json', 'r') as file:
     data = json.load(file)
 
 #general infos
@@ -104,10 +104,10 @@ for i in range(0, n_patients):
 weights=data["weights"]
 
 
-unfeasible_cost = n_days*(n_rooms*weights["room_mixed_age"]+ n_op_theaters* weights["open_operating_theater"]+n_patients*weights["patient_delay"]+ n_op_theaters*n_surgeons*weights["surgeon_transfer"]+
-                        n_rooms*n_shifts*weights["room_nurse_skill"] + n_nurses*weights["nurse_eccessive_workload"]) + n_patients*n_nurses*weights["continuity_of_care"] +n_optional*weights["unscheduled_optional"]
-
-print(unfeasible_cost)
+unfeasible_cost = n_days*(n_rooms*n_age*weights["room_mixed_age"]+ n_op_theaters* weights["open_operating_theater"]+n_patients*weights["patient_delay"]+ n_op_theaters*n_surgeons*weights["surgeon_transfer"]+
+                        n_rooms*n_shifts*max(nurses_skill_levels)*weights["room_nurse_skill"] + n_nurses*weights["nurse_eccessive_workload"]) + n_patients*n_nurses*weights["continuity_of_care"] +n_optional*weights["unscheduled_optional"]
+print("unscheduled: " , n_optional*weights["unscheduled_optional"])
+print("unfeasible solution: ", unfeasible_cost)
 #dentro la parentesi cè una specie di costo peggiore al giorno:
 #tutte le stanze miste
 #tutte le sale operatorie usate
