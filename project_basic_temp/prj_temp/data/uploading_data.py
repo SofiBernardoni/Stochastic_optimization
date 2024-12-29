@@ -6,7 +6,7 @@ import numpy as np
 import json
 
 # Leggere il file JSON
-with open('toy.json', 'r') as file:
+with open('test10.json', 'r') as file:
     data = json.load(file)
 
 #general infos
@@ -52,7 +52,7 @@ for t in data["nurses"]: #t è un dizionario, data["nurse"] è una lista di dizi
         max_load=p["max_load"]
         working_shifts[(n_shifts*day)+m][id_nurse]=max_load
 
-print(working_shifts)
+#print(working_shifts)
 
 
 #chiedere a gaiaaaa: vedere se va bene
@@ -62,7 +62,7 @@ surgeons_availability=np.zeros((n_days, n_surgeons), dtype=int)
 for su in data["surgeons"]:
     id_surgeon=int(su["id"][1:])
     surgeons_availability[:, id_surgeon]=su["max_surgery_time"]
-print(surgeons_availability)
+#print(surgeons_availability)
 
 
 #operating theater
@@ -71,7 +71,7 @@ op_theaters_availability=np.zeros((n_days, n_op_theaters), dtype=int)
 for op in data["operating_theaters"]:
     id_op=int(op["id"][1:])
     op_theaters_availability[:, id_op]=op["availability"]
-print(op_theaters_availability)
+#print(op_theaters_availability)
 
 #room
 n_rooms=len(data["rooms"])
@@ -89,12 +89,33 @@ for i in range(0, n_occupants):
 #patients
 n_patients=len(data["patients"])
 patients=data["patients"]
+n_optional=0
 for i in range(0, n_patients):
     del patients[i]["id"]
     patients[i]["surgeon_id"] = int(patients[i]["surgeon_id"][1:])
     for l in range(0, len(patients[i]["incompatible_room_ids"])):
         patients[i]["incompatible_room_ids"][l]=int(patients[i]["incompatible_room_ids"][l][1:])
+    if not patients[i]["mandatory"]:
+        n_optional+=1
+
+
 
 #weights
 weights=data["weights"]
 
+
+unfeasible_cost = n_days*(n_rooms*weights["room_mixed_age"]+ n_op_theaters* weights["open_operating_theater"]+n_patients*weights["patient_delay"]+ n_op_theaters*n_surgeons*weights["surgeon_transfer"]+
+                        n_rooms*n_shifts*weights["room_nurse_skill"] + n_nurses*weights["nurse_eccessive_workload"]) + n_patients*n_nurses*weights["continuity_of_care"] +n_optional*weights["unscheduled_optional"]
+
+print(unfeasible_cost)
+#dentro la parentesi cè una specie di costo peggiore al giorno:
+#tutte le stanze miste
+#tutte le sale operatorie usate
+#tutti i pazienti in ritardo (pessimistico)
+#tutti i chirurghi vanno in tutte le sale operatorie
+#le nurse skill sono sbagliate per ogni stanza per ogni turno
+#tutte le nurse fanno del lavoro eccessivo
+
+
+# pessimisticamente ogni paziente viene visitato da tutte le infermiere
+# tutti i pazienti opzionali non fatti
