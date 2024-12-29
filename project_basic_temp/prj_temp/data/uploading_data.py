@@ -89,33 +89,23 @@ for i in range(0, n_occupants):
 #patients
 n_patients=len(data["patients"])
 patients=data["patients"]
-n_optional=0
+
+n_optional=0 ######### TOGLI SE METTI COSTO IN hospital ########
 for i in range(0, n_patients):
     del patients[i]["id"]
     patients[i]["surgeon_id"] = int(patients[i]["surgeon_id"][1:])
     for l in range(0, len(patients[i]["incompatible_room_ids"])):
         patients[i]["incompatible_room_ids"][l]=int(patients[i]["incompatible_room_ids"][l][1:])
-    if not patients[i]["mandatory"]:
+    if not patients[i]["mandatory"]: ######### TOGLI SE METTI COSTO IN hospital ########
         n_optional+=1
-
-
 
 #weights
 weights=data["weights"]
 
 
+######### TOGLI SE METTI COSTO IN hospital ########
 unfeasible_cost = n_days*(n_rooms*n_age*weights["room_mixed_age"]+ n_op_theaters* weights["open_operating_theater"]+n_patients*weights["patient_delay"]+ n_op_theaters*n_surgeons*weights["surgeon_transfer"]+
                         n_rooms*n_shifts*max(nurses_skill_levels)*weights["room_nurse_skill"] + n_nurses*weights["nurse_eccessive_workload"]) + n_patients*n_nurses*weights["continuity_of_care"] +n_optional*weights["unscheduled_optional"]
 print("unscheduled: " , n_optional*weights["unscheduled_optional"])
 print("unfeasible solution: ", unfeasible_cost)
-#dentro la parentesi cè una specie di costo peggiore al giorno:
-#tutte le stanze miste
-#tutte le sale operatorie usate
-#tutti i pazienti in ritardo (pessimistico)
-#tutti i chirurghi vanno in tutte le sale operatorie
-#le nurse skill sono sbagliate per ogni stanza per ogni turno
-#tutte le nurse fanno del lavoro eccessivo
-
-
-# pessimisticamente ogni paziente viene visitato da tutte le infermiere
-# tutti i pazienti opzionali non fatti
+######### TOGLI SE METTI COSTO IN hospital ########

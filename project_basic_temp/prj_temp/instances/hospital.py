@@ -82,6 +82,21 @@ class Hospital():
         self.n_patients = n_patients
         self.patients = patients
         self.weights=weights
+        # Computing number of optional patients (needed for computing the fitness value associated to unfeasible sol)
+        n_optional=0
+        for i in range(0, self.n_patients):
+            if not self.patients[i]["mandatory"]:
+                n_optional+=1
+        # unfeasible_cost=fitness value associated to unfeasible solutions--> cost of worst possible case
+        # Note: inside brackets= worst possible cost per day
+        self.unfeasible_cost = self.n_days*(self.n_rooms*self.n_age*self.weights["room_mixed_age"]+ #all mixed rooms with greatest age difference
+                                              self.n_op_theaters*self.weights["open_operating_theater"]+ # all op theaters used
+                                              self.n_patients*self.weights["patient_delay"]+ #all patients delayed
+                                              self.n_op_theaters*self.n_surgeons*self.weights["surgeon_transfer"]+ #all surgeons use all op theaters
+                                              self.n_rooms*self.n_shifts*max(self.nurses_skill_levels)*self.weights["room_nurse_skill"] + #in all rooms and each shift max skill mismatch
+                                              self.n_nurses*self.weights["nurse_eccessive_workload"]) + \
+                               self.n_patients*self.n_nurses*self.weights["continuity_of_care"] +\
+                               n_optional*self.weights["unscheduled_optional"] # all nurses extra load + each patient visited by every nurse+ all optional patients are postponed
 
 
 
@@ -160,6 +175,7 @@ class Scheduling():
             print("ERROR: CN's size not compatible with the number of hospital rooms")
         self.feasible=True
 
+
     # funzione condizione iniziale
     def initial_condition(self):
         for id_occ in range(0,self.h.n_occupants): #set initial conditions with occupants' infos
@@ -185,18 +201,22 @@ class Scheduling():
         while self.feasible and p<self.h.n_patients:
             ad_date = self.dv.ad[p]  # admission date
             if self.h.patients[p]["mandatory"]: #mandatory patient
+                '''
                 if ad_date < self.h.patients[p]["surgery_release_day"] or ad_date > self.h.patients[p]["surgery_due_day"]: ######################## ALREADY CHECKED ########
                     self.feasible=False #admission date out of range
-                else:
-                    self.delays[p]=ad_date - self.h.patients[p]["surgery_release_day"] # delay
+                else: 
+                '''
+                self.delays[p]=ad_date - self.h.patients[p]["surgery_release_day"] # delay
             else: #optional patient
+                '''
                 if ad_date < self.h.patients[p]["surgery_release_day"]: #for optional patient no due date ######################## ALREADY CHECKED ########
                     self.feasible=False
                 else:
-                    if ad_date == self.h.n_days: #postponed
-                        self.unscheduled_patients.add(p)
-                    else: #admitted
-                        self.delays[p]=ad_date - self.h.patients[p]["surgery_release_day"] # delay
+                '''
+                if ad_date == self.h.n_days: #postponed
+                    self.unscheduled_patients.add(p)
+                else: #admitted
+                    self.delays[p]=ad_date - self.h.patients[p]["surgery_release_day"] # delay
             p+=1
 
     def insert_new_exit(self): #inserting values in new patients and exit patients
@@ -243,6 +263,7 @@ class Scheduling():
 
 
     def PSA_NRA_constr_check(self):
+        '''
         #H2 compatible rooms
         ################################ already checked #############################
         p=0
@@ -253,7 +274,7 @@ class Scheduling():
                 self.feasible=False
             p+=1
         ##############################################################################
-
+        '''
         #H1 homogeneus gender for room
         #H7 room capacity
         #S1 calulating age difference for room
@@ -302,10 +323,12 @@ class Scheduling():
                 for shi in range(0, self.h.n_shifts):
                     s=(self.h.n_shifts * d) + shi
                     id_nurse=self.dv.CN[r, s]
+                    '''
                     if self.h.working_shifts[s].get(id_nurse) is None:   ######################à ALREADY CHECKED############### #check if the nurse is working in the shift
                         self.feasible=False
                     else:
-                        nurse_seen_day[shi]=id_nurse
+                    '''
+                    nurse_seen_day[shi]=id_nurse
 
                 if not self.feasible: #exiting because nurses not available
                     break
