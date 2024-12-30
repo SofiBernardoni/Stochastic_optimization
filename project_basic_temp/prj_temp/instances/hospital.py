@@ -122,6 +122,7 @@ class decisional_variables():
 
 
 class Scheduling():
+    '''
     h=Hospital()
     dv=decisional_variables()
 
@@ -162,6 +163,7 @@ class Scheduling():
     tot_skill_vio=0 #S2
     tot_eccessive_work=0 #S4
     tot_continuity_of_care=0 #S3
+    '''
 
     def __init__(self, hospital, dv):
         self.h =hospital
@@ -174,6 +176,44 @@ class Scheduling():
         if ncol!= self.h.n_rooms:
             print("ERROR: CN's size not compatible with the number of hospital rooms")
         self.feasible=True
+
+        self.new_patients =[set()]*(self.h.n_days) # id= day, element: set of incoming patients
+        self.exit_patients=[set()]*(self.h.n_days) #id=day, el: set of exiting patients
+
+        self.exit_occupants=[set()]*(self.h.n_days) #id=day, el: set of exiting occupants
+
+        self.room_to_patient=[[set(), set()]]*self.h.n_rooms # id=n_room, set1= patients in the room, set2=occupants in the room
+
+        self.room_occupants=[]*(self.h.n_occupants) #occupants' room
+
+        # constraints PSA
+        self.room_gender=[None]*self.h.n_rooms
+
+        self.room_age = [set()] * self.h.n_rooms  # id=n_room, el: set of ages in the room
+        self.room_age_counter = [[0] * self.h.n_age] * self.h.n_rooms  # id=n_room, el: list with ith-element= number of people with age level i in the room
+
+        # constraints NRA
+        self.room_skill_level=[0]*self.h.n_rooms #maximum skill level for shift, position=id_room
+        self.room_workload=[0]*self.h.n_rooms #total workload for shift, position=id_room
+        self.nurse_to_patient = [set()] * self.h.n_patients #position=id_patient , el: set of nurses
+        self.nurse_to_occupant = [set()] * self.h.n_occupants #position=id_occupant, el: set of nurses
+
+        # constraints SCP
+        self.surgeon_daily_work=[0]*self.h.n_surgeons #position=id_surgeon, el: total_work_surgeon in a day
+        self.op_theater_daily_occupancy=[0]*self.h.n_op_theaters #position=id_op_th, el: total_occupancy in a day
+        self.op_to_surgeon=[set()]*self.h.n_surgeons #pos= id_surgeon, el: set of op_theater_used_in a day
+
+        # global constraints
+        self.delays=[0]*self.h.n_patients #pos=id_patients, el:delay #S7
+        self.unscheduled_patients=set() #set of unscheduled patients #S8
+
+        #total surgeons_transfer
+        self.tot_tranfer=0 #S6
+        self.tot_op_theater_opened=0 #S5
+        self.tot_diff_age=0 #S1
+        self.tot_skill_vio=0 #S2
+        self.tot_eccessive_work=0 #S4
+        self.tot_continuity_of_care=0 #S3
 
 
     # funzione condizione iniziale
@@ -190,7 +230,6 @@ class Scheduling():
             self.room_age_counter[num_r][age_num]+=1
             day_ex=self.h.occupants[id_occ]["length_of_stay"] #vedi se convertire int
             self.exit_occupants[day_ex].add(id_occ) #exit days of occupants
-
 
     def global_constr_check(self):
         #H5: check mandatory patients are admitted, H6: check admission date feasibility
@@ -226,7 +265,6 @@ class Scheduling():
             self.new_patients[ad_date].add(p)
             self.exit_patients[ex_date].add(p)
 
-
     def SCP_constr_check(self):
         #H3 max surgery time surgeons
         #H4 max surgery time op_theaters
@@ -260,7 +298,6 @@ class Scheduling():
                 s+=1
 
             d+=1
-
 
     def PSA_NRA_constr_check(self):
         '''

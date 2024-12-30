@@ -1,28 +1,19 @@
-import numpy as np
+import json
+from data import *
 from instances import *
 from solvers import *
-import json 
 
-n_rooms = 10
-hospital = Hospital(n_rooms)
-print(hospital.occupation)
-
-hospital.add_patient(3)
-hospital.add_patient(3)
-
-print(hospital.occupation)
-hospital.remove_patient(3)
-print(hospital.occupation)
+hospital_data = upload_data('./data/test05.json') # Uploading hospital data
+hospital =Hospital(hospital_data) # Creating Hospital class
 
 with open("./settings/solver_setting.json") as f:
-    solver_setting = json.load(
-        f
-    )
-ga = Ga_Solver(solver_setting)
-ga.solve()
+    solver_setting = json.load(f) # Uploading solver settings
 
+ga = Ga_Solver(solver_setting,hospital) # Creating Ga_solver class
+solution= ga.solve() # Solving the optimization problem with the Ga_solver
+print(f'Fitness of the solution found: {solution["Optimal fitness"]}')
 
-
-#salvare il più buono
-# Ciaoooooooooooooooooooooooooooo
-#ciao gaia
+with open("./data/ihtc2024_test_solutions/sol_test05.json") as f:
+    real_solution = json.load(f)
+real_optimal_cost=real_solution["costs"]
+print(f'Best costs: {real_optimal_cost}')
