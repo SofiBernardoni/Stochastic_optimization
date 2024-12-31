@@ -1,10 +1,10 @@
 import json
 from data import *
 from instances import *
-from solvers import *
+#from solvers import * # STO USANDO ga_solver_2 perchè ho problemi con import
 
 hospital_data = upload_data('./data/test05.json') # Uploading hospital data
-hospital =Hospital(hospital_data) # Creating Hospital class
+hospital =Hospital(**hospital_data) # Creating Hospital class
 
 with open("./settings/solver_setting.json") as f:
     solver_setting = json.load(f) # Uploading solver settings

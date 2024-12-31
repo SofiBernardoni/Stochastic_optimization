@@ -2,16 +2,10 @@ import random
 import numpy as np
 import time #to manage time limits and time measurements
 
-#import sys
-#import os
-#sys.path.append(os.path.abspath("D:\Gaia\Politecnico\Magistrale\Numerical optimization\\assignment_Fadda\Stochastic_optimization\project_basic_temp\prj_temp\instances")) # Add instances path to solvers directory
-#from instances import * # aggiustare NON LO VEDE #
-
-from ..instances import * #importato ma attenzione che funge solo se usato come parte di un pacchetto...(importazione relativa)
-
-#from ..instances.hospital import Hospital
-#from ..instances.hospital import decisional_variables
-#from ..instances.hospital import Scheduling
+# soluzione temporanea per ovviare problemi di import in ga_solver
+from .hospital import Hospital
+from .hospital import decisional_variables
+from .hospital import Scheduling
 
 class Ga_Solver():
 
@@ -87,7 +81,7 @@ class Ga_Solver():
 
             # CN generation (nurse for room-shift couple)
             CN=np.array([[0]*self.h.n_rooms]*(self.h.n_shifts*self.h.n_days)) #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
-            for s in range(0, self.h.n_shifts*self.h_n_days):
+            for s in range(0, self.h.n_shifts*self.h.n_days):
                 nurses_available=list(self.h.working_shifts[s].keys()) #working_shifts=list of dictionaries(one for shift) with key= nurse_id, value=max_load
                 #CN[s,:]= random.choices(nurses_available, k=self.h.n_rooms) #choosing 1 available nurse for each room in shift s
                 CN[s,:]= np.random.choice(nurses_available, size=self.h.n_rooms, replace=True) #choosing 1 available nurse for each room in shift s
@@ -153,7 +147,7 @@ class Ga_Solver():
             for j in range(0,self.n_different_CN):
                 # CN generation (nurse for room-shift couple)
                 CN_new=np.array([[0]*self.h.n_rooms]*(self.h.n_shifts*self.h.n_days)) #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
-                for s in range(0, self.h.n_shifts*self.h_n_days):
+                for s in range(0, self.h.n_shifts*self.h.n_days):
                     nurses_available=list(self.h.working_shifts[s].keys()) #working_shifts=list of dictionaries(one for shift) with key= nurse_id, value=max_load
                     #CN_new[s,:]= random.choices(nurses_available, k=self.h.n_rooms) #choosing 1 available nurse for each room in shift s
                     CN_new[s,:]= np.random.choice(nurses_available, size=self.h.n_rooms, replace=True) #choosing 1 available nurse for each room in shift
@@ -370,7 +364,7 @@ class Ga_Solver():
                 for j in range(0,self.n_different_CN):
                     # CN generation (nurse for room-shift couple)
                     CN_new=np.array([[0]*self.h.n_rooms]*(self.h.n_shifts*self.h.n_days)) #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
-                    for s in range(0, self.h.n_shifts*self.h_n_days):
+                    for s in range(0, self.h.n_shifts*self.h.n_days):
                         nurses_available=list(self.h.working_shifts[s].keys()) #working_shifts=list of dictionaries(one for shift) with key= nurse_id, value=max_load
                         #CN_new[s,:]= random.choices(nurses_available, k=self.h.n_rooms) #choosing 1 available nurse for each room in shift s
                         CN_new[s,:]= np.random.choice(nurses_available, size=self.h.n_rooms, replace=True) #choosing 1 available nurse for each room in shift

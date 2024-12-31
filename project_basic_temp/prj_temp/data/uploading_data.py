@@ -109,25 +109,26 @@ def upload_data(file_name):
     print("unfeasible solution: ", unfeasible_cost)
     ######### TOGLI SE METTI COSTO IN hospital ########
     '''
-    h_data={} #dictonary with hospital data stored correctly
 
-    h_data["n_days"]=n_days
-    h_data["skill_levels"]=skill_levels
-    h_data["shift_types"]=shift_types
-    h_data["age_groups"]=age_groups
-    h_data["n_nurses"]=n_nurses
-    h_data["nurses_skill_levels"]=nurses_skill_levels
-    h_data["working_shifts"]=working_shifts
-    h_data["n_surgeons"]=n_surgeons
-    h_data["surgeons_availability"]=surgeons_availability
-    h_data["n_op_theaters"]=n_op_theaters
-    h_data["op_theaters_availability"]=op_theaters_availability
-    h_data["n_rooms"]=n_rooms
-    h_data["rooms_capacity"]=rooms_capacity
-    h_data["n_occupants"]=n_occupants
-    h_data["occupants"]=occupants
-    h_data["n_patients"]=n_patients
-    h_data["patients"]=patients
-    h_data["weights"]=weights
+
+    # Dictonary with hospital data stored correctly
+    h_data={ 'n_days':n_days,
+             'skill_levels': skill_levels,
+             "shift_types": shift_types,
+             "age_groups":age_groups,
+             "n_nurses": n_nurses,
+             "nurses_skill_levels": nurses_skill_levels,
+             "working_shifts": working_shifts,
+             "n_surgeons": n_surgeons,
+             "surgeons_availability": surgeons_availability,
+             "n_op_theaters": n_op_theaters,
+             "op_theaters_availability": op_theaters_availability,
+             "n_rooms": n_rooms,
+             "rooms_capacity": rooms_capacity,
+             "n_occupants": n_occupants,
+             "occupants": occupants,
+             "n_patients": n_patients,
+             "patients": patients,
+             "weights": weights }
 
     return h_data

@@ -9,6 +9,6 @@
     "feasible_percentage": 0.5,
     "good_function_fitness_percentage": 1.1 ,
     "max_generation": 20,
-    "max_time": 3600,
+    "max_time": 300,
     "fraction_generation_no_improv": 0.2
 }
