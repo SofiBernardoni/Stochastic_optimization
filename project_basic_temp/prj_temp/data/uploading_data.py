@@ -82,6 +82,7 @@ def upload_data(file_name):
     for i in range(0, n_occupants):
         del occupants[i]["id"]
         occupants[i]["room_id"] = int(occupants[i]["room_id"][1:])
+        occupants[i]["age_group"]=age_groups[occupants[i]["age_group"]] #storing it as a number
     #patients
     n_patients=len(data["patients"])
     patients=data["patients"]
@@ -130,5 +131,7 @@ def upload_data(file_name):
              "n_patients": n_patients,
              "patients": patients,
              "weights": weights }
+
+    print(f' DATA UPLOADED')
 
     return h_data

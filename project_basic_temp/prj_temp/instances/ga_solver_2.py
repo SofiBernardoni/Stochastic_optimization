@@ -24,6 +24,8 @@ class Ga_Solver():
         self.frac_generation_no_improv = solver_setting['fraction_generation_no_improv']
         self.h=hospital
 
+        print(f'GA solver created')
+
     # Other ATTRIBUTES in Ga_solver
     # self.population  # current population=list of decisional_variables()
     # self.fitness #list of fitness values (associated with individuals in population)
@@ -40,13 +42,18 @@ class Ga_Solver():
 
         room_set=set(range(0,self.h.n_rooms)) #set containing all room numbers
 
+        print(f'Starting to create the population')
         while n<self.n_individual:
             ##################### SOLUTION GENERATION ######################
+
+            ###############print(f'Creating individual {n}') ##### delete
+
             # pr generation (rooms for patients)
             pr=[0]*self.h.n_patients #pos=id patient, el: room assigned
             for p in range(0,self.h.n_patients):
                 compatible_rooms=list(room_set-self.h.patients[p]["incompatible_room_ids"]) #### H2 compatible rooms ####
                 pr[p] = random.choice(compatible_rooms)
+            #################print(f'{n} : pr done') ##### delete
 
             # ad generation (admission date for patients)
             # If it's not compatible (due to H3) a new ad is generated
@@ -76,8 +83,9 @@ class Ga_Solver():
                             feasible = False
                         s +=1
                     d +=1
-                    if feasible: #we can stop generating ad because this choice is a valid one
-                        ad_generated=True
+                if feasible: #we can stop generating ad because this choice is a valid one
+                    ad_generated=True
+            #####################print(f'{n} : ad done') ##### delete
 
             # CN generation (nurse for room-shift couple)
             CN=np.array([[0]*self.h.n_rooms]*(self.h.n_shifts*self.h.n_days)) #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
@@ -85,6 +93,8 @@ class Ga_Solver():
                 nurses_available=list(self.h.working_shifts[s].keys()) #working_shifts=list of dictionaries(one for shift) with key= nurse_id, value=max_load
                 #CN[s,:]= random.choices(nurses_available, k=self.h.n_rooms) #choosing 1 available nurse for each room in shift s
                 CN[s,:]= np.random.choice(nurses_available, size=self.h.n_rooms, replace=True) #choosing 1 available nurse for each room in shift s
+            ########################print(f'{n} : CN done') ##### delete
+
             # op generation (operating theaters for patients)
             # If it's not compatible (due to H4) a new op is generated
             op_theaters_list=list(range(0,self.h.n_op_theaters)) #list of operating theaters
@@ -107,9 +117,10 @@ class Ga_Solver():
                         o+=1
                     d+=1
                 if feasible: #we can stop generating op because this choice is a valid one
-                        op_generated=True
-
+                    op_generated=True
+            ######################print(f'{n} : op done') ##### delete
             dv= decisional_variables(pr,ad,op,CN) #proposed solution
+            #######################print(f'{n} : decision variable created') ##### delete
 
             ########## FITNESS EVALUATION OF SOLUTION #############
             # Note that the proposed solution could still be NOT feasible due to H1 or H7 (we admit init_feasible_perc of the initial population not feasible )
@@ -122,19 +133,23 @@ class Ga_Solver():
             sc.PSA_NRA_constr_check() #H2 (already checked we can remove it) #H1,H7 #S1,S2,S3,S4
             fitness_value=sc.fitness() #computing fitness of the solution
             feasible_sol=sc.feasible
+            #########################print(f'{n} : solution evaluated')
 
             # Saving the new individual if feasible or if not feasible but still acceptable
             if not feasible_sol:
                 if not_feasible_individuals<self.n_individual*(1-self.init_feasible_perc): #we can still admit not feasible solutions in our initial population
                     self.population[n]=dv #saving the new individual
-                    self.fitness[n]=self.unfeasible_cost #saving fitness value REALLY BAD
+                    self.fitness[n]=self.h.unfeasible_cost #saving fitness value REALLY BAD
+                    print(f'{n} : solution created. UNFEASIBLE') ####### delete
                     not_feasible_individuals+=1
                     n+=1
             else:
                 self.population[n]=dv #saving the new individual
                 self.fitness[n]=fitness_value #saving fitness value
+                print(f'{n} : solution created. FEASIBLE') ####### delete
                 n+=1
 
+        print(f'Looking for best individuals')
         ############ BEST INDIVIDUALS SEARCH : trying new CN's proposal for them (saving the best one) ##################
         self.ordered_pop_indexs=sorted(range(self.n_individual), key=lambda x: self.fitness[x], reverse=False) #list of indexes ordered for increasing fitness value
         n_init_best=self.n_individual*self.init_best_perc # number of good solutions
@@ -169,12 +184,15 @@ class Ga_Solver():
                     sol=dv_new
                     fit_val=fitness_new
         ############# STORING BEST INDIVIDUAL #########
+        print(f'Storing best found')
         #Updating the order of the n_init_best best solutions
         new_order_best=sorted(self.ordered_pop_indexs[:n_init_best], key=lambda x: self.fitness[x], reverse=False)
         self.ordered_pop_indexs[:n_init_best]=new_order_best
         best_id=self.ordered_pop_indexs[0] #index of smallest fitness --> equivalent to best_id=min(range(self.n_individual), key=lambda x: self.fitness[x])
         self.best_sol=self.population[best_id] #best individual seen so far
         self.best_fit= self.fitness[best_id] #fitness of best individual
+
+
 
     # SELECTION FUNCTION: selection of a couple of parents
     def selection(self,prob, worst_sol):
@@ -283,6 +301,7 @@ class Ga_Solver():
     def solve(self):
         #INITIALIZATION
         self.initialization()
+        print(f'INITIALIZATION DONEEEE')
 
         n_gen=0
         elapsed_tot_time=0
@@ -341,7 +360,7 @@ class Ga_Solver():
                     else: #children NOT feasible
                         if n_new_no_feas<n_max_no_feas: #we can still add not feasible sol
                             new_population[n_new]= children[c] # saving the individual in the new population
-                            new_fitness[n_new]= self.unfeasible_cost #saving fitness value REALLY BAD
+                            new_fitness[n_new]= self.h.unfeasible_cost #saving fitness value REALLY BAD
                             n_new +=1
                             n_new_no_feas+=1
                             if n_new==self.n_individual: # new population completed (if there's still 1 child to consider we can ignore it)
@@ -400,6 +419,7 @@ class Ga_Solver():
 
 
             n_gen +=1
+            print(f'n_gen: {n_gen}')
             end_time = time.time()
             elapsed_tot_time= end_time-start_time #time from process beginning
 
