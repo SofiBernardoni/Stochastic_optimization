@@ -24,7 +24,7 @@ class Hospital():
     # nurses (id="n00")
     n_nurses=0
     nurses_skill_levels=[0]*n_nurses #position=id , info = skill_level
-    working_shifts=[{}]*(n_days*n_shifts) #list of dictionaries(one for shift) with key= nurse_id, value=max_load
+    working_shifts = [{} for _ in range(n_days * n_shifts)] #list of dictionaries(one for shift) with key= nurse_id, value=max_load
 
     # surgeons (id="s00")
     n_surgeons=0
@@ -40,11 +40,11 @@ class Hospital():
 
     # occupants (id="a00")
     n_occupants=0
-    occupants=[{}]*n_occupants #list of dictionaries of occupants position=id
+    occupants=[{} for _ in range(n_occupants)] #list of dictionaries of occupants position=id
 
     # patients (id="p00")
     n_patients=0
-    patients=[{}]*n_patients #list of dictionaries of patients position=id
+    patients=[{} for _ in range(n_patients)] #list of dictionaries of patients position=id
 
     #weights
     weights={
@@ -115,7 +115,7 @@ class decisional_variables():
         self.pr = pr #pos=id patient, el: room
         self.ad = ad #pos=id_patient, el: admission date= 0...D, ad=D if postponed
         self.op = op #pos=id_patient , el: op_theater
-        self.CN =CN #[CN]ij, i=id_room, j=shift 0...D*3-1, el: id_nurse
+        self.CN =CN #[CN]ij,  i=shift 0...D*3-1, j=id_room, el: id_nurse
         n_pat=len(pr)
         if len(self.ad)!= n_pat or len(self.op)!= n_pat:
             print("ERROR: pr,ad and op need to have the same length")
@@ -178,31 +178,32 @@ class Scheduling():
             print("ERROR: CN's size not compatible with the number of hospital rooms")
         self.feasible=True
 
-        self.new_patients =[set()]*(self.h.n_days+1) # id= day, element: set of incoming patients (id=self.h.n_days patients postponed)
-        self.exit_patients=[set()]*(self.h.n_days+1) #id=day, el: set of exiting patients (id=self.h.n_days patients still in the hospital ath the end of the sched period)
+        self.new_patients =[set() for _ in range(0,self.h.n_days+1)] # id= day, element: set of incoming patients (id=self.h.n_days patients postponed)
+        self.exit_patients=[set() for _ in range(0,self.h.n_days+1)] #id=day, el: set of exiting patients (id=self.h.n_days patients still in the hospital ath the end of the sched period)
 
-        self.exit_occupants=[set()]*(self.h.n_days+1) #id=day, el: set of exiting occupants (id=self.h.n_days patients still in the hospital ath the end of the sched period)
+        self.exit_occupants=[set() for _ in range(0,self.h.n_days+1)] #id=day, el: set of exiting occupants (id=self.h.n_days patients still in the hospital ath the end of the sched period)
 
-        self.room_to_patient=[[set(), set()]]*self.h.n_rooms # id=n_room, set1= patients in the room, set2=occupants in the room
+        #da modificare
+        self.room_to_patient = [[set(), set()] for _ in range(0,self.h.n_rooms)] # id=n_room, set1= patients in the room, set2=occupants in the room
 
         self.room_occupants=[0]*(self.h.n_occupants) #occupants' room
 
         # constraints PSA
-        self.room_gender=[None]*self.h.n_rooms
+        self.room_gender=[None for _ in range(self.h.n_rooms)]
 
-        self.room_age = [set()] * self.h.n_rooms  # id=n_room, el: set of ages in the room
+        self.room_age = [set() for _ in range(0, self.h.n_rooms)]  # id=n_room, el: set of ages in the room
         self.room_age_counter = [[0] * self.h.n_age] * self.h.n_rooms  # id=n_room, el: list with ith-element= number of people with age level i in the room
 
         # constraints NRA
         self.room_skill_level=[0]*self.h.n_rooms #maximum skill level for shift, position=id_room
         self.room_workload=[0]*self.h.n_rooms #total workload for shift, position=id_room
-        self.nurse_to_patient = [set()] * self.h.n_patients #position=id_patient , el: set of nurses
-        self.nurse_to_occupant = [set()] * self.h.n_occupants #position=id_occupant, el: set of nurses
+        self.nurse_to_patient = [set() for _ in range(0,self.h.n_patients)] #position=id_patient , el: set of nurses
+        self.nurse_to_occupant = [set() for _ in range(0,self.h.n_occupants)] #position=id_occupant, el: set of nurses
 
         # constraints SCP
         self.surgeon_daily_work=[0]*self.h.n_surgeons #position=id_surgeon, el: total_work_surgeon in a day
         self.op_theater_daily_occupancy=[0]*self.h.n_op_theaters #position=id_op_th, el: total_occupancy in a day
-        self.op_to_surgeon=[set()]*self.h.n_surgeons #pos= id_surgeon, el: set of op_theater_used_in a day
+        self.op_to_surgeon=[set() for _ in range(0,self.h.n_surgeons)] #pos= id_surgeon, el: set of op_theater_used_in a day
 
         # global constraints
         self.delays=[0]*self.h.n_patients #pos=id_patients, el:delay #S7
@@ -232,7 +233,7 @@ class Scheduling():
             self.room_age_counter[num_r][age_num]+=1
             day_ex=min(self.h.occupants[id_occ]["length_of_stay"], self.h.n_days )# day_ex=self.h.n_days if length_of_stay>elf.h.n_days (need to convert to int?)
             self.exit_occupants[day_ex].add(id_occ) #exit days of occupants
-
+        #print("exit_occupants" + str(self.exit_occupants))
 
     def global_constr_check(self):
         #H5: check mandatory patients are admitted, H6: check admission date feasibility
@@ -242,6 +243,7 @@ class Scheduling():
         p=0
         while self.feasible and p<self.h.n_patients:
             ad_date = self.dv.ad[p]  # admission date
+            print("giorno di ammissione del paziente " + str(p) + "è "+ str(ad_date))
             if self.h.patients[p]["mandatory"]: #mandatory patient
                 '''
                 if ad_date < self.h.patients[p]["surgery_release_day"] or ad_date > self.h.patients[p]["surgery_due_day"]: ######################## ALREADY CHECKED ########
@@ -262,11 +264,16 @@ class Scheduling():
             p+=1
 
     def insert_new_exit(self): #inserting values in new patients and exit patients
+        print(self.new_patients)
         for p in range(0, self.h.n_patients):
             ad_date = self.dv.ad[p]
-            ex_date= min(ad_date+ self.h.patients[p]["length_of_stay"], self.h.n_days) # ex_date=self.h.n_days if patient still in the hospital at the end of the sched periodd
+            print("il giorno di ammissione del paziente" +str(p)+ "è "+ str(ad_date))
+            ex_date= min(ad_date+ self.h.patients[p]["length_of_stay"], self.h.n_days) # da valutare ex_date=self.h.n_days if patient still in the hospital at the end of the sched periodd
+            print("il giorno di uscita del paziente" + str(p) + "è " + str(ex_date))
             self.new_patients[ad_date].add(p)
             self.exit_patients[ex_date].add(p)
+            print(" vettore con insiemi di ammissione:" + str(self.new_patients))
+            print(" vettore con insiemi di ammissione:" + str(self.exit_patients))
 
     def SCP_constr_check(self):
         #H3 max surgery time surgeons
@@ -276,13 +283,14 @@ class Scheduling():
         d=0
         while self.feasible and d<self.h.n_days:
             for p in self.new_patients[d]:
+                print("nuovo paziente nel giorno" +str(d) + "è " + str(p))
+                print("surgeon daily work:" + str(self.surgeon_daily_work))
                 surg_duration=self.h.patients[p]["surgery_duration"]
                 doc_id=self.h.patients[p]["surgeon_id"]
                 op_ass=self.dv.op[p]
                 self.surgeon_daily_work[doc_id] += surg_duration #adding surgery duration to total working hours of doc
                 self.op_theater_daily_occupancy[op_ass] +=surg_duration #adding surgery duration to total working hours of op_theater
                 self.op_to_surgeon[doc_id].add(op_ass) #add op_the to set of op_the used by the surgeon in the day
-
             o=0
             while self.feasible and o <self.h.n_op_theaters:
                 if self.op_theater_daily_occupancy[o] > self.h.op_theaters_availability[d,o]: #H4 ######################## ALREADY CHECKED ########
@@ -290,18 +298,23 @@ class Scheduling():
                     print(f'H4 violation')
                 elif self.op_theater_daily_occupancy[o] !=0: #S5
                     self.tot_op_theater_opened +=1
+                    #print("h4 ok")
                 o+=1
 
             s=0
-            while self.feasible  and s < self.h.n_surgeons:
+            while self.feasible and s < self.h.n_surgeons:
                 if self.surgeon_daily_work[s] > self.h.surgeons_availability[d,s]: #H3 ######################## ALREADY CHECKED ########
                     self.feasible = False
+                    print(self.surgeon_daily_work[s])
+                    print(self.h.surgeons_availability[d,s])
                     print(f'H3 violation')
                 else:
                     self.tot_tranfer += len(self.op_to_surgeon[s])-1 #S6
                 s+=1
 
             d+=1
+            self.surgeon_daily_work=[0]*self.h.n_surgeons
+
 
     def PSA_NRA_constr_check(self):
         '''
@@ -339,14 +352,15 @@ class Scheduling():
                 self.room_to_patient[room][0].add(np) #adding new patient in the room
 
                 #updating data about age in the room
-                age_num = self.h.occupants[np]["age_group"]  # set initial room ages
+                age_num = self.h.patients[np]["age_group"]  # set initial room ages
                 self.room_age[room].add(age_num)
                 self.room_age_counter[room][age_num] += 1
 
             #S1 e H7
             r=0
             while self.feasible and r < self.h.n_rooms:
-                self.tot_diff_age += (max(self.room_age[r])-min(self.room_age[r])) #S1: max difference between age levels
+                if len(self.room_age[r])>0: ######################cambiato da sofi, controllare
+                    self.tot_diff_age += (max(self.room_age[r])-min(self.room_age[r])) #S1: max difference between age levels
                 tot_people=len(self.room_to_patient[r][0])+len(self.room_to_patient[r][1]) #total people in the room
                 if tot_people > self.h.rooms_capacity[r]:
                     self.feasible =False #H7
@@ -365,7 +379,7 @@ class Scheduling():
 
                 for shi in range(0, self.h.n_shifts):
                     s=(self.h.n_shifts * d) + shi
-                    id_nurse=self.dv.CN[r, s]
+                    id_nurse=self.dv.CN[s, r]
                     '''
                     if self.h.working_shifts[s].get(id_nurse) is None:   ######################à ALREADY CHECKED############### #check if the nurse is working in the shift
                         self.feasible=False
@@ -386,6 +400,8 @@ class Scheduling():
                 for oc in self.room_to_patient[r][1]: #occupants in the room
                     first_index=self.h.n_shifts*d #admission date=0 for occupants
                     for sh in range(0, self.h.n_shifts):
+                        #print(str(self.h.occupants[oc]["workload_produced"]))
+                        #print(" self.h.occupants[oc][workload_produced]" + str(self.h.occupants[oc]["workload_produced"][first_index+sh]))
                         tot_work_room[sh] += self.h.occupants[oc]["workload_produced"][first_index+sh] # adding workload requested in the shift
                         max_skill_room[sh] =max(max_skill_room[sh], self.h.occupants[oc]["skill_level_required"][first_index+sh]) #updating skill level requested in the shift
                         self.nurse_to_occupant[oc].add(nurse_seen_day[sh]) #adding the nurse seen by the patient
@@ -413,7 +429,9 @@ class Scheduling():
                     self.room_age[room].remove(age)
 
             for eo in self.exit_occupants[d]:
+                print("exit_ occupant nel giorno" + str(d) + "sono :" + str(self.exit_occupants[d]))
                 room=self.room_occupants[eo]
+                print(" la stanza che lascia il paziente " + str(eo)+ "è "+ str(room))
                 self.room_to_patient[room].remove(eo) #removing occupant
                 if len(self.room_to_patient[room][0]) + len(self.room_to_patient[room][1]) == 0:
                     self.room_gender[room] = None

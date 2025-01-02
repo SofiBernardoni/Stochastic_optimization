@@ -58,7 +58,7 @@ def upload_data(file_name):
     for su in data["surgeons"]:
         id_surgeon=int(su["id"][1:])
         surgeons_availability[:, id_surgeon]=su["max_surgery_time"]
-    #print(surgeons_availability)
+    print(surgeons_availability)
 
 
     #operating theater

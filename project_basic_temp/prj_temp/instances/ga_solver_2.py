@@ -74,9 +74,10 @@ class Ga_Solver():
                 while feasible and d<self.h.n_days:
                     new_patients={p for p in range(0, self.h.n_patients) if ad[p]==d} #set of incoming patients of day d
                     surgeon_daily_work=[0]*self.h.n_surgeons #position=id_surgeon, el: total_work_surgeon in a day
-                    for p in new_patients:
-                        doc_id=self.h.patients[p]["surgeon_id"]
-                        surgeon_daily_work[doc_id] += self.h.patients[p]["surgery_duration"] #adding surgery duration to total working hours of doc
+                    for pi in new_patients:
+                        doc_id=self.h.patients[pi]["surgeon_id"]
+                        surgeon_daily_work[doc_id] += self.h.patients[pi]["surgery_duration"] #adding surgery duration to total working hours of doc
+
                     s=0
                     while feasible and s < self.h.n_surgeons:
                         if surgeon_daily_work[s] > self.h.surgeons_availability[d,s]: #### H3 ####
