@@ -37,7 +37,6 @@ def upload_data(file_name):
         id_nurse=data["nurses"][nurse]["id"]
         pos=int(id_nurse[1:])
         nurses_skill_levels[pos]=data["nurses"][nurse]["skill_level"]
-
     working_shifts=[{}]*(n_days*n_shifts)
 
     for t in data["nurses"]: #t è un dizionario, data["nurse"] è una lista di dizionari
@@ -58,7 +57,7 @@ def upload_data(file_name):
     for su in data["surgeons"]:
         id_surgeon=int(su["id"][1:])
         surgeons_availability[:, id_surgeon]=su["max_surgery_time"]
-    print(surgeons_availability)
+    #print(surgeons_availability)
 
 
     #operating theater
@@ -98,7 +97,7 @@ def upload_data(file_name):
         patients[i]["incompatible_room_ids"]=incomp_rooms # set of room ids
         #if not patients[i]["mandatory"]: ######### TOGLI SE METTI COSTO IN hospital ########
             #n_optional+=1
-
+    print(f"ci sono {n_occupants} occupants, {n_patients} pazienti, {n_rooms} stanze, {n_op_theaters} sale operatorie, {n_surgeons} chirurghi, {n_nurses} infermiere, {n_days} giorni")
     #weights
     weights=data["weights"]
 

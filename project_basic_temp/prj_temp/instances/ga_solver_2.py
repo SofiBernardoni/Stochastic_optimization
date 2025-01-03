@@ -153,7 +153,12 @@ class Ga_Solver():
         print(f'Looking for best individuals')
         ############ BEST INDIVIDUALS SEARCH : trying new CN's proposal for them (saving the best one) ##################
         self.ordered_pop_indexs=sorted(range(self.n_individual), key=lambda x: self.fitness[x], reverse=False) #list of indexes ordered for increasing fitness value
-        n_init_best=self.n_individual*self.init_best_perc # number of good solutions
+        ##############################attenzione, ho cambiato e ho messo int
+        n_init_best=int(self.n_individual*self.init_best_perc) # number of good solutions
+        print(f"n_init_best --> {n_init_best}")
+        print(f"ordered_pop_indexs --> {self.ordered_pop_indexs}")
+        print(f"n_individual --> {self.n_individual} ")
+        print(f"init_best_perc --< {self.init_best_perc}")
         for i in range(0,n_init_best): #working on the n_init_best best solutions (lowest fitness)
             id=self.ordered_pop_indexs[i]
             sol=self.population[id] #individual
@@ -257,7 +262,8 @@ class Ga_Solver():
 
         # AD MUTATION (admission date for patients)
         ad_mut_perc= np.random.beta(a_beta, b_beta, 1) #percentage of ad el to change
-        ad_mut_n=round(ad_mut_perc*self.h.n_patients) # number of ad el to change
+        ############attenzione cambio int (era round)
+        ad_mut_n=int(ad_mut_perc*self.h.n_patients) # number of ad el to change
         ad_mut_ids=random.sample(list(range(0,self.h.n_patients)), k=ad_mut_n)
         for p_id in ad_mut_ids:
             if self.h.patients[p_id]["mandatory"]: #mandatory patient
@@ -269,7 +275,8 @@ class Ga_Solver():
 
         # PR MUTATION (rooms for patients)
         pr_mut_perc= np.random.beta(a_beta, b_beta, 1) #percentage of pr el to change
-        pr_mut_n=round(pr_mut_perc*self.h.n_patients) # number of pr el to change
+        ############attenzione cambio int (era round)
+        pr_mut_n=int(pr_mut_perc*self.h.n_patients) # number of pr el to change
         pr_mut_ids=random.sample(list(range(0,self.h.n_patients)), k=pr_mut_n)
         room_set=set(range(0,self.h.n_rooms)) # list of rooms
         for p_id in pr_mut_ids:
@@ -278,7 +285,8 @@ class Ga_Solver():
 
         # OP MUTATION (operating theaters for patients)
         op_mut_perc= np.random.beta(a_beta, b_beta, 1) #percentage of op el to change
-        op_mut_n=round(op_mut_perc*self.h.n_patients) # number of op el to change
+        ############attenzione cambio int (era round)
+        op_mut_n=int(op_mut_perc*self.h.n_patients) # number of op el to change
         op_mut_ids=random.sample(list(range(0,self.h.n_patients)), k=op_mut_n)
         op_theaters_list=list(range(0,self.h.n_op_theaters)) #list of operating theaters
         for p_id in op_mut_ids:
@@ -286,14 +294,16 @@ class Ga_Solver():
 
         # CN MUTATION
         CN_mut_perc= np.random.beta(a_beta, b_beta, 1) #percentage of CN el to change
-        CN_mut_n=round(CN_mut_perc*self.h.n_rooms*self.h.n_days*self.h.n_shifts) # number of CN el to change
+        ############attenzione cambio int (era round)
+        CN_mut_n=int(CN_mut_perc*self.h.n_rooms*self.h.n_days*self.h.n_shifts) # number of CN el to change
         CN_mut_ids=random.sample(list(range(0,self.h.n_rooms*self.h.n_days*self.h.n_shifts)), k=CN_mut_n) #sampling numbers from self.h.n_rooms*self.h.n_days*self.h.n_shifts
         for id in CN_mut_ids:
             s=id//self.h.n_rooms #shift id
             r=id%self.h.n_rooms # room id
             nurses_available=list(self.h.working_shifts[s].keys()) #working_shifts=list of dictionaries(one for shift) with key= nurse_id, value=max_load
             #CN[s,:]= random.choices(nurses_available, k=self.h.n_rooms) #choosing 1 available nurse for each room in shift s
-            ind.CN[s,r]= random.sample(nurses_available, k=1)
+            ##############################attenzioneeeee chat
+            ind.CN[s,r]= random.sample(nurses_available, k=1)[0]
 
         return ind
 
@@ -314,7 +324,8 @@ class Ga_Solver():
         #Note: self.n_individual-fit_selection_indiv= number of individuals in each generation which parents selection is among the worst half of the population
         n_min_feas=round(self.feasible_perc*self.n_individual) #miniminum number of feasible solutions for each generation
         n_max_no_feas=self.n_individual-n_min_feas #maximum number of NOT feasible solutions for each generation
-        n_best_sol=self.n_individual*self.good_fitness_perc # number of good solutions in the population (which we want to compute other CNs for)
+        ############################àattenzioneeee ho cambiato con int
+        n_best_sol=int(self.n_individual*self.good_fitness_perc) # number of good solutions in the population (which we want to compute other CNs for)
 
         start_time = time.time() #starting time
         while n_gen<self.max_generation and elapsed_tot_time<self.max_time and n_gen_no_improv<max_gen_no_improv: #stopping criteria: num generations, time, num gen without improvement
@@ -326,7 +337,8 @@ class Ga_Solver():
             n_new_no_feas=0
             # Note: we use the fitness inverse for the selection probability as we're minimizing the fitness function (higher prob for lower fitness)
             fit_inv=list(map(lambda x: 1 / x, self.fitness)) #ok because we never have fitness=0
-            select_prob=fit_inv/sum(fit_inv) #normalizing the prob vector
+            tot_fit_inv= sum(fit_inv)
+            select_prob=[ x /tot_fit_inv for x in fit_inv] #normalizing the prob vector
             while n_new<self.n_individual:
                 # SELECTION
                 if n_new<fit_selection_indiv: #still picking parents according to fitness
@@ -374,8 +386,9 @@ class Ga_Solver():
 
             # Best individuals search : trying new CN's proposal for them (saving the best one) #
             self.ordered_pop_indexs=sorted(range(self.n_individual), key=lambda x: self.fitness[x], reverse=False) #list of indexes ordered for increasing fitness value
-
             for i in range(0,n_best_sol): #working on the n_best_sol best solutions (lowest fitness)
+                print(f"n_best_sol --> {n_best_sol}")
+                print(f"order_pop_index --> {self.ordered_pop_indexs}")
                 id=self.ordered_pop_indexs[i]
                 sol=self.population[id] #individual
                 fit_val= self.fitness[id] #original fitness value
